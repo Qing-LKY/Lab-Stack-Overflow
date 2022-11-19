@@ -1,0 +1,11 @@
+.vscode/
+
+*.exe
+*.obj
+*.pdb
+*.ilk
+*.bin
+
+2020302181032.txt
+gen.txt
+shellcode.c
